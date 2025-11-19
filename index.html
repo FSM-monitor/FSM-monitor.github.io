@@ -318,10 +318,44 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { 
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
     });
+    //loadOeeData();
+
+    // Pega AQUÍ la URL de tu Aplicación Web de Apps Script
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxV0ptN5QtEvG31UKuKGCgyOCdcGhhm9wuoyq_O_FjjDWRO1zE1vldyceXjAlmv5-ylZQ/exec'; 
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ... Código de fecha ...
     loadOeeData();
+    setInterval(loadOeeData, 60000); 
+});
+
+function loadOeeData() {
+    const loadingDiv = document.getElementById('loading');
+    const contentDiv = document.getElementById('dashboard-content');
+
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+
+    // 🌟 USAR FETCH EN LUGAR DE google.script.run
+    fetch(APPS_SCRIPT_URL)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayData(data);
+        })
+        .catch(error => {
+            handleError(error);
+        });
+}
+
+// ... El resto de tus funciones JavaScript (displayData, renderProductionTable, handleError) ...
 
     // Actualizar automáticamente cada 60 segundos
-    setInterval(loadOeeData, 60000); 
+    //setInterval(loadOeeData, 60000); 
 });
 
 // 11. Mejora: Función de utilidad para formatear números (DRY)
@@ -355,19 +389,19 @@ function setIndicator(value, elementId, iconId) {
 }
 
 
-function loadOeeData() {
-    const loadingDiv = document.getElementById('loading');
-    const contentDiv = document.getElementById('dashboard-content');
+//function loadOeeData() {
+    //const loadingDiv = document.getElementById('loading');
+   // const contentDiv = document.getElementById('dashboard-content');
 
-    loadingDiv.style.display = 'block';
-    contentDiv.style.display = 'none';
+   // loadingDiv.style.display = 'block';
+   // contentDiv.style.display = 'none';
 
     // Llama a la función de Apps Script
-    google.script.run
-        .withSuccessHandler(displayData)
-        .withFailureHandler(handleError)
-        .getOeeData();
-}
+   // google.script.run
+    //    .withSuccessHandler(displayData)
+    //    .withFailureHandler(handleError)
+    //    .getOeeData();
+//}
 
 function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     const tbody = document.querySelector('#productionTable tbody');
