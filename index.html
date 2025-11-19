@@ -243,7 +243,7 @@ body {
     </div>
 
     <section id="dashboard-content" class="dashboard-grid" style="display:none;"> <div class="main-metric card"> <div class="metric-label">Efectividad Global del Equipo (OEE)</div>
-            <div class="metric-value" id="oee-value">-- <span id="oee-icon"></span></div>
+            <div class="metric-value" id="oee-value">--% <span id="oee-icon"></span></div>
         <div class="oee-factors">
 
             <div class="oee-factors">
@@ -442,7 +442,7 @@ function displayData(data) {
     setIndicator(rendimiento, 'rendimiento-value', 'rendimiento-icon');
     setIndicator(calidad, 'calidad-value', 'calidad-icon');
 
-    oeeValueElement.textContent = data.oee + '%';
+    document.getElementById('oee-value').firstChild.textContent = data.oee + '% ';
     document.getElementById('disponibilidad-value').firstChild.textContent = data.disponibilidad + '% ';
     document.getElementById('rendimiento-value').firstChild.textContent = data.rendimiento + '% ';
     document.getElementById('calidad-value').firstChild.textContent = data.calidad + '% ';
