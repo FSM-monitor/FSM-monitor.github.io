@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* 🎨 Paleta de Colores: Mantenida, pero con ligeros ajustes de luminosidad para contraste. */
+:root {
+    --color-primary: #FFB300; /* Amarillo/Ámbar, ligeramente más suave */
+    --color-secondary: #C62828; /* Rojo Oscuro (más profesional que el anterior) */
+    --color-dark: #212121; /* Negro casi puro */
+    --color-light: #ECEFF1; /* Gris muy claro (para fondo de tarjetas) */
+    --color-background: #F5F5F5; /* Fondo general, más claro que #f7f7f7 */
+    --color-success: #388E3C; /* Verde */
+    --color-warning: #FFB300; /* Amarillo */
+    --color-danger: #D32F2F; /* Rojo */
+
+    /* 2. Mejora: Variable CSS para el escalado global (fácil de modificar) */
+    --global-scale: 0.75; 
+}
+
+body {
+    /* 1. Mejora: Aplicación de Roboto y mejor contraste de color */
+    font-family: 'Roboto', sans-serif;
+    margin: 0; /* Eliminamos el margin: 3 no estándar */
+    padding: 15px;
+    background-color: var(--color-background);
+    color: var(--color-dark);
+    overflow: auto; /* Dejamos que el cuerpo se desborde si es necesario */
+
+    /* 3. Mejora: Escalado simplificado y uso de variable CSS */
+    transform: scale(var(--global-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--global-scale)); /* Compensación precisa del ancho */
+    min-height: calc(100% / var(--global-scale)); /* Ajustamos la altura para mejor visualización */
+    box-sizing: border-box; /* Asegura que padding no afecte el cálculo de ancho */
+}
+
+.header {
+    background-color: var(--color-dark);
+    color: white;
+    padding: 10px 15px; /* Más padding para que respire */
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    /* 4. Mejora: Margen negativo ajustado para encajar bien con el padding del body */
+    margin: -15px -15px 15px -15px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    margin: 0; /* Eliminamos el margin: 5 no estándar */
+    font-size: 1.9em;
+    font-weight: 700; /* Hacemos el título más audaz */
+    color: var(--color-primary); /* Mejor contraste con el fondo oscuro */
+}
+
+.date-display {
+    font-size: 1.1em;
+    color: var(--color-light);
+    font-weight: 300; /* Fuente más ligera para la fecha */
+}
+
+.dashboard-grid {
+    display: grid;
+    /* 5. Mejora: Se mantiene la estructura 2fr 1fr para un diseño de contenido principal-barra lateral */
+    grid-template-columns: 2fr 1fr; 
+    gap: 15px; /* Más separación entre tarjetas para un aspecto limpio */
+}
+
+.card { /* 6. Mejora: Clase base para todas las tarjetas (DRY - Don't Repeat Yourself) */
+    background-color: white;
+    padding: 20px; /* Más padding */
+    border-radius: 12px; /* Esquinas más suaves */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada pero suave */
+    transition: transform 0.3s ease-in-out; /* Animación al pasar el ratón */
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.main-metric {
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 6em; /* Un poco más grande para impacto */
+    font-weight: 700;
+    color: var(--color-primary);
+    margin: 10px 0 15px 0;
+    line-height: 1; /* Asegura que el número se centre bien */
+}
+
+.metric-label {
+    font-size: 1.2em; /* Ligeramente más pequeño */
+    color: var(--color-dark);
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--color-light);
+    padding-bottom: 10px;
+    font-weight: 400; /* Peso normal */
+}
+
+.oee-factors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px; 
+    margin-top: 20px; /* Más separación */
+}
+
+.factor-card {
+    background-color: var(--color-light);
+    padding: 15px;
+    border-radius: 10px; 
+    text-align: center;
+    box-shadow: none; /* Sombra eliminada para mejor contraste con la tarjeta principal */
+}
+
+.factor-card .label {
+    font-size: 0.85em;
+    color: var(--color-dark);
+    font-weight: 400; /* Peso normal */
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.factor-card .value {
+    font-size: 2.5em; /* Un poco más grande */
+    font-weight: 700;
+    color: var(--color-dark);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.info-card h3 {
+    margin-top: 0;
+    font-size: 1.3em;
+    color: var(--color-dark);
+    border-bottom: 2px solid var(--color-secondary);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0; /* Más padding */
+    border-bottom: 1px solid var(--color-light); /* Borde sólido para más limpieza */
+    font-size: 0.95em;
+    font-weight: 400;
+}
+
+.info-item span:last-child {
+    font-weight: 700; /* Resaltar los valores */
+    color: var(--color-dark);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.loader {
+    text-align: center;
+    padding: 80px; /* Más espacio */
+    font-size: 1.4em;
+    color: var(--color-dark);
+    font-weight: 300;
+}
+
+/* Indicador de color para el OEE */
+.indicator-low { color: var(--color-danger); }
+.indicator-medium { color: var(--color-warning); }
+.indicator-high { color: var(--color-success); }
+
+/* 7. Mejora: Estilos de Tabla más profesionales */
+#productionTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#productionTable thead th {
+    background-color: var(--color-secondary);
+    color: white;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+#productionTable tbody td {
+    padding: 8px 10px;
+    font-size: 0.9em;
+    border-bottom: 1px solid var(--color-light);
+}
+
+#productionTable tbody tr:nth-child(even) {
+    background-color: #FAFAFA; /* Rayas ligeras */
+}
+
+/* Alineación específica de las columnas de números */
+#productionTable th:nth-child(2), 
+#productionTable td:nth-child(2),
+#productionTable th:nth-child(3),
+#productionTable td:nth-child(3) {
+    text-align: center;
+}
+
+/* 8. Estilos obsoletos eliminados o refactorizados */
+.production-info-card { 
+    padding: 0; /* Se elimina el padding para que la tabla llegue a los bordes */
+    border-radius: 12px;
+    overflow: hidden; /* Asegura que los bordes de la tabla se mantengan dentro del card */
+}
+
+/* El h3 de la tabla debe tener un padding si el contenedor lo pierde */
+.production-info-card h3 {
+    padding: 20px 20px 8px 20px;
+    margin-bottom: 0;
+}
+
+/* Ajuste de padding para el contenido de la tabla */
+#productionTable {
+    margin-top: 0;
+}
+</style>
+</head>
+<body>
+
+<header class="header"> <h1>🏭 OEE Granalladora</h1>
+    <span class="date-display" id="current-date">Cargando fecha...</span>
+</header>
+
+<main id="dashboard-container"> <div id="loading" class="loader">
+        Cargando datos en tiempo real... ⏳
+    </div>
+
+    <section id="dashboard-content" class="dashboard-grid" style="display:none;"> <div class="main-metric card"> <div class="metric-label">Efectividad Global del Equipo (OEE)</div>
+            <div class="metric-value" id="oee-value">--</div>
+
+            <div class="oee-factors">
+                <div class="factor-card">
+                    <div class="label">Disponibilidad</div>
+                    <div class="value" id="disponibilidad-value">--% <span id="disponibilidad-icon"></span></div>
+                </div>
+                <div class="factor-card">
+                    <div class="label">Rendimiento</div>
+                    <div class="value" id="rendimiento-value">--% <span id="rendimiento-icon"></span></div>
+                </div>
+                <div class="factor-card">
+                    <div class="label">Calidad</div>
+                    <div class="value" id="calidad-value">--% <span id="calidad-icon"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="sidebar"> <div class="info-card card"> <h3>⏱️ Tiempos (Minutos)</h3>
+                <div class="info-item">
+                    <span>Tiempo Estandar/Unidad:</span>
+                    <span id="tiempo-estandar">-- min</span>
+                </div>
+                <div class="info-item">
+                    <span>Tiempo Funcionamiento Planeado:</span>
+                    <span id="tiempo-planeado">-- min</span>
+                </div>
+                <div class="info-item">
+                    <span>Tiempo Operativo Real:</span>
+                    <span id="tiempo-operativo">-- min</span>
+                </div>
+            </div>
+
+            <div class="info-card card"> <h3>📦 Producción</h3>
+                <div class="info-item">
+                    <span>Ganchos Buenos:</span>
+                    <span id="unidades-buenas">--</span>
+                </div>
+                <div class="info-item">
+                    <span>Unidades Malas/Regranalladas:</span>
+                    <span id="unidades-malas">--</span>
+                </div>
+                <div class="info-item">
+                    <span>Producción Total:</span>
+                    <span id="unidades-total">--</span>
+                </div>
+            </div>
+
+
+            <div class="info-card production-info-card card"> <h3>📊 Producción del Día por Código de Pieza</h3>
+                <div style="padding: 0 20px 20px 20px;"> <table id="productionTable">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th style="text-align: center;">Cant. Ganchos</th> 
+                                <th style="text-align: center;">Cant. Piezas</th> 
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+
+    </section>
+
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Establece la fecha de manera más completa y profesional
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    loadOeeData();
+
+    // Actualizar automáticamente cada 60 segundos
+    setInterval(loadOeeData, 60000); 
+});
+
+// 11. Mejora: Función de utilidad para formatear números (DRY)
+function formatNumber(value) {
+    // Asegura que sea un número y luego aplica el formato de localización
+    return Number(value).toLocaleString('es-ES'); 
+}
+
+// 12. Mejora: Función de utilidad para asignar ícono de semáforo
+function setIndicator(value, elementId, iconId) {
+    const element = document.getElementById(elementId);
+    const iconElement = document.getElementById(iconId);
+    let icon = '⚪'; // Icono por defecto (ej. círculo blanco)
+
+    element.classList.remove('indicator-low', 'indicator-medium', 'indicator-high');
+
+    // Mantenemos la lógica de semáforo (ej. 65/85)
+    if (value < 65) {
+        element.classList.add('indicator-low');
+        icon = '🔴';
+    } else if (value >= 65 && value < 85) {
+        element.classList.add('indicator-medium');
+        icon = '🟡';
+    } else {
+        element.classList.add('indicator-high');
+        icon = '🟢';
+    }
+    
+    // Actualiza el ícono en el span auxiliar
+    iconElement.textContent = icon;
+}
+
+
+function loadOeeData() {
+    const loadingDiv = document.getElementById('loading');
+    const contentDiv = document.getElementById('dashboard-content');
+
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+
+    // Llama a la función de Apps Script
+    google.script.run
+        .withSuccessHandler(displayData)
+        .withFailureHandler(handleError)
+        .getOeeData();
+}
+
+function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
+    const tbody = document.querySelector('#productionTable tbody');
+    tbody.innerHTML = ''; // Limpia datos anteriores
+
+    const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
+        return { 
+            codigo: codigo, 
+            cantidadGanchos: produccionPorCodigo[codigo], // 13. Mejora: Nombres de variables más claros
+            cantidadPiezas: ProduccionporCodigoCant[codigo] || 0
+        }; 
+    }).sort((a, b) => b.cantidadGanchos - a.cantidadGanchos); // Ordenar por cantidad de ganchos
+
+    if (sortedData.length === 0) {
+        // Asegura el colspan correcto
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; font-style: italic;">No hay producción registrada para hoy.</td></tr>';
+        return;
+    }
+
+    sortedData.forEach(item => {
+        const row = tbody.insertRow();
+        const cellCodigo = row.insertCell();
+        const cellCantidadGanchos = row.insertCell();
+        const cellCantidadPiezas = row.insertCell();
+
+        cellCodigo.textContent = item.codigo;
+        // 11. Mejora: Uso de la función de utilidad formatNumber
+        cellCantidadGanchos.textContent = formatNumber(item.cantidadGanchos); 
+        cellCantidadPiezas.textContent = formatNumber(item.cantidadPiezas); 
+    });
+}
+
+
+function displayData(data) {
+    const loadingDiv = document.getElementById('loading');
+    const contentDiv = document.getElementById('dashboard-content');
+    const oeeValueElement = document.getElementById('oee-value');
+
+    // Ocultar cargador y mostrar contenido
+    loadingDiv.style.display = 'none';
+    contentDiv.style.display = 'grid';
+
+    if (data.error) {
+        handleError(data.error);
+        return;
+    }
+
+    renderProductionTable(data.produccionPorCodigo, data.produccionPorCodigoCant)
+
+    const oee = parseFloat(data.oee);
+    const disponibilidad = parseFloat(data.disponibilidad);
+    const rendimiento = parseFloat(data.rendimiento);
+    const calidad = parseFloat(data.calidad);
+
+
+    // 12. Mejora: Aplicar indicador de color y ícono (semáforo) para todas las métricas OEE
+    setIndicator(oee, 'oee-value', 'oee-icon'); // Se añade span en el HTML principal si se desea ícono aquí
+
+    setIndicator(disponibilidad, 'disponibilidad-value', 'disponibilidad-icon');
+    setIndicator(rendimiento, 'rendimiento-value', 'rendimiento-icon');
+    setIndicator(calidad, 'calidad-value', 'calidad-icon');
+
+
+    // 1. Métricas Principales (El formato se maneja dentro de setIndicator para el color)
+    oeeValueElement.textContent = data.oee + '%';
+    document.getElementById('disponibilidad-value').firstChild.textContent = data.disponibilidad + '% ';
+    document.getElementById('rendimiento-value').firstChild.textContent = data.rendimiento + '% ';
+    document.getElementById('calidad-value').firstChild.textContent = data.calidad + '% ';
+
+
+    // 2. Tiempos
+    document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
+    document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
+    document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
+
+    // 3. Producción
+    const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
+    // 11. Mejora: Uso de la función de utilidad formatNumber
+    document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
+    document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
+    document.getElementById('unidades-total').textContent = formatNumber(unidadesTotal);
+
+}
+
+function handleError(error) {
+    const loadingDiv = document.getElementById('loading');
+    loadingDiv.textContent = '❌ ERROR al cargar los datos: ' + error.message;
+    loadingDiv.style.color = 'var(--color-danger)';
+    console.error(error);
+}
+</script>
+</body>
+</html>
