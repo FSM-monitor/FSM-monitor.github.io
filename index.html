@@ -14,29 +14,39 @@
     --color-success: #388E3C;
     --color-warning: #FFB300;
     --color-danger: #D32F2F;
-    /* Eliminamos la variable de escala compleja, usaremos zoom nativo */
+    --global-scale: 0.85; 
 }
 
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 20px; /* Un poco de aire alrededor */
+    padding: 0;
     background-color: var(--color-background);
     color: var(--color-dark);
-    
-    /* 🔧 LA SOLUCIÓN DE CENTRADO DEFINITIVA */
-    zoom: 0.85; /* Esto hace el "zoom out" limpiamente sin romper el centro */
-    display: block; /* Aseguramos comportamiento estándar de bloque */
-    text-align: center; /* Ayuda a centrar contenidos inline si los hubiera */
+    overflow-x: hidden;
+
+    /* 🔧 ESTRATEGIA DE CENTRADO FLEXBOX (INFALIBLE) */
+    display: flex;             /* Convierte el body en un contenedor flexible */
+    justify-content: center;   /* Centra el contenido horizontalmente a la fuerza */
+    align-items: flex-start;   /* Alinea al tope (para evitar cortes si es muy alto) */
+    min-height: 100vh;         /* Asegura que ocupe toda la altura de la pantalla */
+    width: 100%;
 }
 
 /* 📦 CONTENEDOR PRINCIPAL */
 #app-wrapper {
     width: 100%;
-    max-width: 1400px; /* Ancho máximo controlado para que no se estire infinito */
-    margin: 0 auto;    /* ESTO ES LO QUE LO CENTRA AUTOMÁTICAMENTE */
-    text-align: left;  /* Restauramos alineación de texto interna */
+    max-width: 1400px; /* Ancho máximo */
+    padding: 20px;
     box-sizing: border-box;
+    
+    /* 🔧 ESCALADO LIMPIO */
+    /* En lugar de zoom, usamos transform con origen en el centro-arriba */
+    transform: scale(var(--global-scale)); 
+    transform-origin: top center; /* CLAVE: Escala manteniendo el centro alineado */
+    
+    /* Compensación visual para el espacio vacío que deja el scale al reducirse */
+    margin-bottom: -10%; 
 }
 
 .header {
@@ -49,8 +59,6 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    
-    /* Asegura que el header no se salga del ancho */
     width: 100%; 
     box-sizing: border-box; 
 }
@@ -60,7 +68,6 @@ body {
     font-size: 1.8em;
     font-weight: 700;
     color: var(--color-primary);
-    /* Flex para alinear icono y texto si fuera necesario */
     display: flex;
     align-items: center;
     gap: 10px;
@@ -79,7 +86,7 @@ body {
     grid-template-columns: 7fr 3fr; 
     gap: 20px;
     align-items: start; 
-    width: 100%; /* Ocupar todo el ancho del wrapper */
+    width: 100%; 
 }
 
 /* Columna Izquierda */
@@ -397,7 +404,7 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     tbody.innerHTML = ''; 
 
     const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
-        // 🟢 [JS] Recibe nuevas variables aquí
+        // 🟢 [JS] Recibe nuevas variables aquí del objeto data
         return { 
             codigo: codigo, 
             cantidadGanchos: produccionPorCodigo[codigo], 
@@ -415,7 +422,7 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
         row.insertCell().textContent = item.codigo;
         row.insertCell().textContent = formatNumber(item.cantidadGanchos); 
         row.insertCell().textContent = formatNumber(item.cantidadPiezas); 
-        // 🟢 [JS] Agrega nuevas celdas aquí
+        // 🟢 [JS] Agrega nuevas celdas aquí: row.insertCell().textContent = item.nuevaVariable;
     });
 }
 
@@ -448,7 +455,8 @@ function displayData(data) {
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
-    // 🟢 [JS] Muestra nuevas variables de tiempo aquí
+    // 🟢 [JS] Muestra nuevas variables de tiempo aquí:
+    // document.getElementById('id-en-html').textContent = data.nuevaVariable + ' min';
 
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
