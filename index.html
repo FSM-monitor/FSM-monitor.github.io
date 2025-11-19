@@ -14,7 +14,7 @@
     --color-success: #388E3C;
     --color-warning: #FFB300;
     --color-danger: #D32F2F;
-    --global-scale: 0.85; /* Ajusté un poco la escala para que se vea mejor */
+    --global-scale: 0.85; /* Ajustado para mejor visualización */
 }
 
 body {
@@ -25,11 +25,10 @@ body {
     color: var(--color-dark);
     overflow-x: hidden; 
     
-    /* Escalado global */
     transform: scale(var(--global-scale));
-    transform-origin: top center; /* Cambiado a top center para centrar el dashboard */
+    transform-origin: top center;
     width: calc(100% / var(--global-scale));
-    min-height: calc(100vh / var(--global-scale)); /* Usar vh para altura completa */
+    min-height: calc(100vh / var(--global-scale));
     box-sizing: border-box;
 }
 
@@ -62,27 +61,27 @@ body {
 /* --- LAYOUT PRINCIPAL (GRID) --- */
 .dashboard-grid {
     display: grid;
-    /* 70% izquierda (OEE + Tabla), 30% derecha (Tiempos + Producción) */
+    /* Columna izquierda (OEE + Tabla) 70%, Columna derecha (Tiempos + Producción) 30% */
     grid-template-columns: 7fr 3fr; 
     gap: 20px;
-    align-items: start; /* Evita que las columnas se estiren innecesariamente */
+    align-items: start; /* Asegura que las columnas no se estiren al 100% de alto si no tienen contenido */
 }
 
-/* Contenedor para la columna izquierda */
+/* Contenedor para la columna izquierda (OEE principal y Tabla de producción) */
 .main-column {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /* Espacio entre las tarjetas de esta columna */
 }
 
-/* Contenedor para la barra lateral derecha */
+/* Contenedor para la barra lateral derecha (Tiempos y Resumen de Producción) */
 .sidebar {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 20px; /* Espacio entre las tarjetas de la barra lateral */
 }
 
-/* --- TARJETAS --- */
+/* --- TARJETAS BASE --- */
 .card {
     background-color: white;
     padding: 20px;
@@ -96,7 +95,7 @@ body {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* --- ESTILOS OEE --- */
+/* --- ESTILOS OEE PRINCIPAL --- */
 .main-metric {
     text-align: center;
 }
@@ -148,7 +147,7 @@ body {
     color: var(--color-dark);
 }
 
-/* --- ESTILOS PANELES LATERALES (TIEMPO Y PRODUCCION) --- */
+/* --- ESTILOS PANELES LATERALES (TIEMPOS Y RESUMEN PRODUCCION) --- */
 .info-card h3 {
     margin-top: 0;
     font-size: 1.2em;
@@ -180,18 +179,18 @@ body {
     border-bottom: none;
 }
 
-/* --- ESTILOS TABLA (Ahora en columna principal) --- */
+/* --- ESTILOS TABLA DE PRODUCCIÓN (Ahora en columna principal) --- */
 .production-info-card { 
     padding: 0; 
     border-radius: 12px;
-    overflow: hidden;
+    overflow: hidden; /* Asegura que los bordes de la tabla se mantengan dentro del card */
 }
 
 .production-info-card h3 {
     padding: 20px 20px 10px 20px;
     margin: 0;
-    background-color: white;
-    border-bottom: none;
+    background-color: white; /* Asegura que el título tenga el mismo fondo que la tarjeta */
+    border-bottom: none; /* El borde ya está en la tabla */
 }
 
 #productionTable {
@@ -217,19 +216,19 @@ body {
 }
 
 #productionTable tbody tr:nth-child(even) {
-    background-color: #FAFAFA;
+    background-color: #FAFAFA; /* Rayas ligeras */
 }
 
 #productionTable tbody tr:hover {
-    background-color: #f0f0f0;
+    background-color: #f0f0f0; /* Efecto hover para filas */
 }
 
-/* Alineación columnas numéricas */
+/* Alineación específica de las columnas de números */
 #productionTable th:nth-child(2), 
 #productionTable td:nth-child(2),
 #productionTable th:nth-child(3),
 #productionTable td:nth-child(3) {
-    text-align: right;
+    text-align: right; /* Alineación a la derecha para números */
 }
 
 /* --- UTILIDADES --- */
@@ -240,14 +239,15 @@ body {
     color: #666;
 }
 
+/* Clases de color para los valores (sin íconos de bola) */
 .indicator-low { color: var(--color-danger); }
 .indicator-medium { color: var(--color-warning); }
 .indicator-high { color: var(--color-success); }
 
-/* Responsive para pantallas pequeñas */
+/* Responsive para pantallas más pequeñas */
 @media (max-width: 900px) {
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Una sola columna en pantallas pequeñas */
     }
 }
 </style>
@@ -270,20 +270,20 @@ body {
             
             <div class="main-metric card">
                 <div class="metric-label">Efectividad Global del Equipo (OEE)</div>
-                <div class="metric-value" id="oee-value">--% <span id="oee-icon"></span></div>
+                <div class="metric-value" id="oee-value">--%</div> 
                 
                 <div class="oee-factors">
                     <div class="factor-card">
                         <div class="label">Disponibilidad</div>
-                        <div class="value" id="disponibilidad-value">--% <span id="disponibilidad-icon"></span></div>
+                        <div class="value" id="disponibilidad-value">--%</div>
                     </div>
                     <div class="factor-card">
                         <div class="label">Rendimiento</div>
-                        <div class="value" id="rendimiento-value">--% <span id="rendimiento-icon"></span></div>
+                        <div class="value" id="rendimiento-value">--%</div>
                     </div>
                     <div class="factor-card">
                         <div class="label">Calidad</div>
-                        <div class="value" id="calidad-value">--% <span id="calidad-icon"></span></div>
+                        <div class="value" id="calidad-value">--%</div>
                     </div>
                 </div>
             </div>
@@ -344,7 +344,7 @@ body {
 </main>
 
 <script>
-// 1. URL DE APPS SCRIPT (MANTENIDA)
+// URL DE APPS SCRIPT
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEDGe-UPx956ZbpnHytjuJm4rFsTiROsZNGLNd8cOXgPRS7yGzz7yKHdT5DsnJ8A9-dA/exec'; 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -359,30 +359,25 @@ function formatNumber(value) {
     return Number(value).toLocaleString('es-ES'); 
 }
 
-function setIndicator(value, elementId, iconId) {
+// MODIFICADO: Esta función ahora solo aplica el color, sin modificar el contenido de texto para agregar íconos.
+function setIndicator(value, elementId) { // Eliminado iconId como parámetro
     const element = document.getElementById(elementId);
-    const iconElement = document.getElementById(iconId);
-    let icon = '⚪'; 
     element.classList.remove('indicator-low', 'indicator-medium', 'indicator-high');
 
     if (value < 65) {
         element.classList.add('indicator-low');
-        icon = '🔴';
     } else if (value >= 65 && value < 85) {
         element.classList.add('indicator-medium');
-        icon = '🟡';
     } else {
         element.classList.add('indicator-high');
-        icon = '🟢';
     }
-    iconElement.textContent = icon;
+    // No se modifica el textContent aquí para no añadir el ícono
 }
 
 function loadOeeData() {
     const loadingDiv = document.getElementById('loading');
     const contentDiv = document.getElementById('dashboard-content');
 
-    // Solo mostramos 'loading' si es la primera carga (cuando el contenido está oculto)
     if(contentDiv.style.display === 'none') {
         loadingDiv.style.display = 'block';
     }
@@ -437,25 +432,21 @@ function displayData(data) {
 
     renderProductionTable(data.produccionPorCodigo, data.produccionPorCodigoCant)
 
-    // Actualización de valores
     const oee = parseFloat(data.oee);
-    setIndicator(oee, 'oee-value', 'oee-icon'); 
-    document.getElementById('oee-value').firstChild.textContent = data.oee + '% ';
+    setIndicator(oee, 'oee-value'); // Llamada sin iconId
+    document.getElementById('oee-value').textContent = data.oee + '%'; // Solo el valor, sin ícono
 
-    // Factores
     const factors = ['disponibilidad', 'rendimiento', 'calidad'];
     factors.forEach(factor => {
         const val = parseFloat(data[factor]);
-        setIndicator(val, `${factor}-value`, `${factor}-icon`);
-        document.getElementById(`${factor}-value`).firstChild.textContent = data[factor] + '% ';
+        setIndicator(val, `${factor}-value`); // Llamada sin iconId
+        document.getElementById(`${factor}-value`).textContent = data[factor] + '%'; // Solo el valor, sin ícono
     });
 
-    // Tiempos
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
 
-    // Producción
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
     document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
