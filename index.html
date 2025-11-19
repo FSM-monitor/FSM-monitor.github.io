@@ -25,11 +25,24 @@ body {
     color: var(--color-dark);
     overflow-x: hidden; 
     
+    /* Configuración del escalado */
     transform: scale(var(--global-scale));
-    transform-origin: top center;
+    transform-origin: top center; /* Asegura que el zoom se haga desde el centro superior */
     width: calc(100% / var(--global-scale));
     min-height: calc(100vh / var(--global-scale));
     box-sizing: border-box;
+    
+    /* CORRECCIÓN DE CENTRADO: Flexbox para centrar el contenido escalado */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Clase utilitaria para limitar el ancho y centrar */
+.container-limit {
+    width: 100%;
+    max-width: 1600px; /* Ajusta esto si quieres que sea más ancho o angosto */
+    margin: 0 auto;    /* Esto fuerza el centrado horizontal */
 }
 
 .header {
@@ -43,6 +56,10 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    /* Aplicamos el límite de ancho al header también */
+    width: 100%;
+    max-width: 1600px;
+    box-sizing: border-box; 
 }
 
 .header h1 {
@@ -61,10 +78,12 @@ body {
 /* --- LAYOUT PRINCIPAL (GRID) --- */
 .dashboard-grid {
     display: grid;
-    /* 70% Izquierda | 30% Derecha */
     grid-template-columns: 7fr 3fr; 
     gap: 20px;
     align-items: start; 
+    /* Aplicamos el límite de ancho al grid */
+    width: 100%;
+    max-width: 1600px;
 }
 
 /* Columna Izquierda */
@@ -95,11 +114,10 @@ body {
     text-align: center;
 }
 
-/* Aquí está el cambio clave: El color se aplica al texto, sin iconos */
 .metric-value {
     font-size: 6em;
     font-weight: 700;
-    color: var(--color-dark); /* Color por defecto */
+    color: var(--color-dark); 
     margin: 10px 0;
     line-height: 1;
 }
@@ -223,7 +241,6 @@ body {
     color: #666;
 }
 
-/* Clases de color solo para el texto */
 .indicator-low { color: var(--color-danger) !important; }
 .indicator-medium { color: var(--color-warning) !important; }
 .indicator-high { color: var(--color-success) !important; }
@@ -280,7 +297,7 @@ body {
                             <th>Código de Pieza</th>
                             <th>Cant. Ganchos</th> 
                             <th>Cant. Piezas</th> 
-                        </tr>
+                            </tr>
                     </thead>
                     <tbody>
                         </tbody>
@@ -304,7 +321,7 @@ body {
                     <span>Operativo Real:</span>
                     <span id="tiempo-operativo">-- min</span>
                 </div>
-            </div>
+                </div>
 
             <div class="info-card card">
                 <h3>📦 Resumen Producción</h3>
@@ -320,7 +337,7 @@ body {
                     <span>Producción Total:</span>
                     <span id="unidades-total">--</span>
                 </div>
-            </div>
+                </div>
 
         </aside>
 
@@ -342,18 +359,15 @@ function formatNumber(value) {
     return Number(value).toLocaleString('es-ES'); 
 }
 
-// 🔧 FUNCIÓN CORREGIDA: Solo cambia clases CSS, no toca iconos ni HTML interno
 function setIndicatorColor(value, elementId) {
     const element = document.getElementById(elementId);
-    // Limpiamos clases anteriores
     element.classList.remove('indicator-low', 'indicator-medium', 'indicator-high');
-
     if (value < 65) {
-        element.classList.add('indicator-low'); // Rojo
+        element.classList.add('indicator-low'); 
     } else if (value >= 65 && value < 85) {
-        element.classList.add('indicator-medium'); // Amarillo
+        element.classList.add('indicator-medium');
     } else {
-        element.classList.add('indicator-high'); // Verde
+        element.classList.add('indicator-high');
     }
 }
 
@@ -383,6 +397,8 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     tbody.innerHTML = ''; 
 
     const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
+        // 🟢 AQUÍ: Si agregas datos en el Apps Script, aquí los recibes
+        // Ejemplo: nuevaVariable: data.otraVariable[codigo]
         return { 
             codigo: codigo, 
             cantidadGanchos: produccionPorCodigo[codigo], 
@@ -400,6 +416,8 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
         row.insertCell().textContent = item.codigo;
         row.insertCell().textContent = formatNumber(item.cantidadGanchos); 
         row.insertCell().textContent = formatNumber(item.cantidadPiezas); 
+        // 🟢 AQUÍ: Agrega una celda más si agregaste un <th> en el HTML
+        // Ejemplo: row.insertCell().textContent = item.nuevaVariable;
     });
 }
 
@@ -418,8 +436,8 @@ function displayData(data) {
     // 1. Actualizar OEE
     const oee = parseFloat(data.oee);
     const oeeElement = document.getElementById('oee-value');
-    oeeElement.textContent = data.oee + '%'; // Solo texto
-    setIndicatorColor(oee, 'oee-value'); // Solo color
+    oeeElement.textContent = data.oee + '%'; 
+    setIndicatorColor(oee, 'oee-value'); 
 
     // 2. Actualizar Factores
     const factors = ['disponibilidad', 'rendimiento', 'calidad'];
@@ -427,20 +445,23 @@ function displayData(data) {
         const val = parseFloat(data[factor]);
         const elId = `${factor}-value`;
         const el = document.getElementById(elId);
-        el.textContent = data[factor] + '%'; // Solo texto
-        setIndicatorColor(val, elId); // Solo color
+        el.textContent = data[factor] + '%'; 
+        setIndicatorColor(val, elId); 
     });
 
     // 3. Tiempos
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
+    // 🟢 AQUÍ: Agrega la línea para actualizar nuevo dato de tiempo
+    // Ejemplo: document.getElementById('nuevo-id-tiempo').textContent = data.nuevoDato + ' min';
 
     // 4. Producción
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
     document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
     document.getElementById('unidades-total').textContent = formatNumber(unidadesTotal);
+    // 🟢 AQUÍ: Agrega la línea para actualizar nuevo dato de producción
 }
 
 function handleError(error) {
