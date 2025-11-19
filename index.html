@@ -20,29 +20,31 @@
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 10px;
+    padding: 0;
     background-color: var(--color-background);
     color: var(--color-dark);
-    overflow-x: hidden; 
+    overflow-x: hidden; /* Evita scroll horizontal innecesario */
     
-    /* Configuración del escalado */
-    transform: scale(var(--global-scale));
-    transform-origin: top center; /* Asegura que el zoom se haga desde el centro superior */
-    width: calc(100% / var(--global-scale));
-    min-height: calc(100vh / var(--global-scale));
-    box-sizing: border-box;
-    
-    /* CORRECCIÓN DE CENTRADO: Flexbox para centrar el contenido escalado */
+    /* CENTRADO ABSOLUTO */
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center; /* Centra el wrapper horizontalmente */
+    min-height: 100vh;
+    width: 100vw;
 }
 
-/* Clase utilitaria para limitar el ancho y centrar */
-.container-limit {
+/* 📦 NUEVO WRAPPER: Esto soluciona el problema del centrado */
+#app-wrapper {
     width: 100%;
-    max-width: 1600px; /* Ajusta esto si quieres que sea más ancho o angosto */
-    margin: 0 auto;    /* Esto fuerza el centrado horizontal */
+    max-width: 1600px; /* Ancho máximo para pantallas gigantes */
+    padding: 20px;
+    box-sizing: border-box;
+
+    /* Aplicamos el zoom AQUÍ, no en el body */
+    transform: scale(var(--global-scale));
+    transform-origin: top center; /* Asegura que se escale desde el centro arriba */
+    
+    /* Compensación de altura si el scale recorta el fondo */
+    margin-bottom: -100px; 
 }
 
 .header {
@@ -56,10 +58,6 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    /* Aplicamos el límite de ancho al header también */
-    width: 100%;
-    max-width: 1600px;
-    box-sizing: border-box; 
 }
 
 .header h1 {
@@ -78,12 +76,10 @@ body {
 /* --- LAYOUT PRINCIPAL (GRID) --- */
 .dashboard-grid {
     display: grid;
+    /* 70% Izquierda | 30% Derecha */
     grid-template-columns: 7fr 3fr; 
     gap: 20px;
     align-items: start; 
-    /* Aplicamos el límite de ancho al grid */
-    width: 100%;
-    max-width: 1600px;
 }
 
 /* Columna Izquierda */
@@ -255,96 +251,98 @@ body {
 </head>
 <body>
 
-<header class="header">
-    <h1>🏭 OEE Granalladora</h1>
-    <span class="date-display" id="current-date">Cargando fecha...</span>
-</header>
+<div id="app-wrapper">
 
-<main id="dashboard-container">
-    <div id="loading" class="loader">
-        Cargando datos en tiempo real... ⏳
-    </div>
+    <header class="header">
+        <h1>🏭 OEE Granalladora</h1>
+        <span class="date-display" id="current-date">Cargando fecha...</span>
+    </header>
 
-    <section id="dashboard-content" class="dashboard-grid" style="display:none;">
-        
-        <div class="main-column">
-            
-            <div class="main-metric card">
-                <div class="metric-label">Efectividad Global del Equipo (OEE)</div>
-                <div class="metric-value" id="oee-value">--%</div> 
-                
-                <div class="oee-factors">
-                    <div class="factor-card">
-                        <div class="label">Disponibilidad</div>
-                        <div class="value" id="disponibilidad-value">--%</div>
-                    </div>
-                    <div class="factor-card">
-                        <div class="label">Rendimiento</div>
-                        <div class="value" id="rendimiento-value">--%</div>
-                    </div>
-                    <div class="factor-card">
-                        <div class="label">Calidad</div>
-                        <div class="value" id="calidad-value">--%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="production-info-card card">
-                <h3>📊 Producción del Día por Código</h3>
-                <table id="productionTable">
-                    <thead>
-                        <tr>
-                            <th>Código de Pieza</th>
-                            <th>Cant. Ganchos</th> 
-                            <th>Cant. Piezas</th> 
-                            </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
-            </div>
+    <main id="dashboard-container">
+        <div id="loading" class="loader">
+            Cargando datos en tiempo real... ⏳
         </div>
 
-        <aside class="sidebar">
+        <section id="dashboard-content" class="dashboard-grid" style="display:none;">
             
-            <div class="info-card card">
-                <h3>⏱️ Tiempos</h3>
-                <div class="info-item">
-                    <span>Tiempo Estandar/U:</span>
-                    <span id="tiempo-estandar">-- min</span>
-                </div>
-                <div class="info-item">
-                    <span>Funcionamiento Plan:</span>
-                    <span id="tiempo-planeado">-- min</span>
-                </div>
-                <div class="info-item">
-                    <span>Operativo Real:</span>
-                    <span id="tiempo-operativo">-- min</span>
-                </div>
-                </div>
-
-            <div class="info-card card">
-                <h3>📦 Resumen Producción</h3>
-                <div class="info-item">
-                    <span>Ganchos Buenos:</span>
-                    <span id="unidades-buenas" style="color: var(--color-success);">--</span>
-                </div>
-                <div class="info-item">
-                    <span>Malas/Regranalladas:</span>
-                    <span id="unidades-malas" style="color: var(--color-danger);">--</span>
-                </div>
-                <div class="info-item" style="background-color: #f9f9f9; margin-top:5px; padding: 10px 5px; border-radius: 4px;">
-                    <span>Producción Total:</span>
-                    <span id="unidades-total">--</span>
-                </div>
+            <div class="main-column">
+                
+                <div class="main-metric card">
+                    <div class="metric-label">Efectividad Global del Equipo (OEE)</div>
+                    <div class="metric-value" id="oee-value">--%</div> 
+                    
+                    <div class="oee-factors">
+                        <div class="factor-card">
+                            <div class="label">Disponibilidad</div>
+                            <div class="value" id="disponibilidad-value">--%</div>
+                        </div>
+                        <div class="factor-card">
+                            <div class="label">Rendimiento</div>
+                            <div class="value" id="rendimiento-value">--%</div>
+                        </div>
+                        <div class="factor-card">
+                            <div class="label">Calidad</div>
+                            <div class="value" id="calidad-value">--%</div>
+                        </div>
+                    </div>
                 </div>
 
-        </aside>
+                <div class="production-info-card card">
+                    <h3>📊 Producción del Día por Código</h3>
+                    <table id="productionTable">
+                        <thead>
+                            <tr>
+                                <th>Código de Pieza</th>
+                                <th>Cant. Ganchos</th> 
+                                <th>Cant. Piezas</th> 
+                                </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
 
-    </section>
-</main>
+            <aside class="sidebar">
+                
+                <div class="info-card card">
+                    <h3>⏱️ Tiempos</h3>
+                    <div class="info-item">
+                        <span>Tiempo Estandar/U:</span>
+                        <span id="tiempo-estandar">-- min</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Funcionamiento Plan:</span>
+                        <span id="tiempo-planeado">-- min</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Operativo Real:</span>
+                        <span id="tiempo-operativo">-- min</span>
+                    </div>
+                    </div>
 
-<script>
+                <div class="info-card card">
+                    <h3>📦 Resumen Producción</h3>
+                    <div class="info-item">
+                        <span>Ganchos Buenos:</span>
+                        <span id="unidades-buenas" style="color: var(--color-success);">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Malas/Regranalladas:</span>
+                        <span id="unidades-malas" style="color: var(--color-danger);">--</span>
+                    </div>
+                    <div class="info-item" style="background-color: #f9f9f9; margin-top:5px; padding: 10px 5px; border-radius: 4px;">
+                        <span>Producción Total:</span>
+                        <span id="unidades-total">--</span>
+                    </div>
+                    </div>
+
+            </aside>
+
+        </section>
+    </main>
+
+</div> <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEDGe-UPx956ZbpnHytjuJm4rFsTiROsZNGLNd8cOXgPRS7yGzz7yKHdT5DsnJ8A9-dA/exec'; 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -397,8 +395,7 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     tbody.innerHTML = ''; 
 
     const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
-        // 🟢 AQUÍ: Si agregas datos en el Apps Script, aquí los recibes
-        // Ejemplo: nuevaVariable: data.otraVariable[codigo]
+        // 🟢 [JS] 4. Si agregas variables nuevas en Apps Script, aquí las recibes del objeto data
         return { 
             codigo: codigo, 
             cantidadGanchos: produccionPorCodigo[codigo], 
@@ -416,8 +413,7 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
         row.insertCell().textContent = item.codigo;
         row.insertCell().textContent = formatNumber(item.cantidadGanchos); 
         row.insertCell().textContent = formatNumber(item.cantidadPiezas); 
-        // 🟢 AQUÍ: Agrega una celda más si agregaste un <th> en el HTML
-        // Ejemplo: row.insertCell().textContent = item.nuevaVariable;
+        // 🟢 [JS] 5. Si agregaste un <th> en HTML, agrega aquí: row.insertCell().textContent = item.tuNuevaVariable;
     });
 }
 
@@ -453,15 +449,14 @@ function displayData(data) {
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
-    // 🟢 AQUÍ: Agrega la línea para actualizar nuevo dato de tiempo
-    // Ejemplo: document.getElementById('nuevo-id-tiempo').textContent = data.nuevoDato + ' min';
+    // 🟢 [JS] 6. Agrega la línea para mostrar tu nuevo dato de tiempo aquí
 
     // 4. Producción
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
     document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
     document.getElementById('unidades-total').textContent = formatNumber(unidadesTotal);
-    // 🟢 AQUÍ: Agrega la línea para actualizar nuevo dato de producción
+    // 🟢 [JS] 7. Agrega la línea para mostrar tu nuevo dato de producción aquí
 }
 
 function handleError(error) {
