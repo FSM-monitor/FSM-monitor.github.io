@@ -3,6 +3,8 @@
 <head>
 <base target="_top">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 /* 🎨 Paleta de Colores */
 :root {
@@ -25,27 +27,24 @@ body {
     color: var(--color-dark);
     overflow-x: hidden;
 
-    /* 🔧 ESTRATEGIA DE CENTRADO FLEXBOX (INFALIBLE) */
-    display: flex;             /* Convierte el body en un contenedor flexible */
-    justify-content: center;   /* Centra el contenido horizontalmente a la fuerza */
-    align-items: flex-start;   /* Alinea al tope (para evitar cortes si es muy alto) */
-    min-height: 100vh;         /* Asegura que ocupe toda la altura de la pantalla */
+    /* 🔧 ESTRATEGIA DE CENTRADO FLEXBOX */
+    display: flex;            
+    justify-content: center;   
+    align-items: flex-start;   
+    min-height: 100vh;         
     width: 100%;
 }
 
 /* 📦 CONTENEDOR PRINCIPAL */
 #app-wrapper {
     width: 100%;
-    max-width: 1400px; /* Ancho máximo */
+    max-width: 1400px; 
     padding: 20px;
     box-sizing: border-box;
     
     /* 🔧 ESCALADO LIMPIO */
-    /* En lugar de zoom, usamos transform con origen en el centro-arriba */
     transform: scale(var(--global-scale)); 
-    transform-origin: top center; /* CLAVE: Escala manteniendo el centro alineado */
-    
-    /* Compensación visual para el espacio vacío que deja el scale al reducirse */
+    transform-origin: top center; 
     margin-bottom: -10%; 
 }
 
@@ -164,8 +163,15 @@ body {
     color: var(--color-dark);
 }
 
+/* --- GRÁFICO (NUEVO ESTILO) --- */
+.chart-wrapper {
+    position: relative;
+    height: 300px; /* Altura fija para evitar saltos */
+    width: 100%;
+}
+
 /* --- PANELES LATERALES --- */
-.info-card h3 {
+.info-card h3, .production-info-card h3, .chart-card h3 {
     margin-top: 0;
     font-size: 1.2em;
     color: var(--color-dark);
@@ -294,6 +300,13 @@ body {
                     </div>
                 </div>
 
+                <div class="chart-card card">
+                    <h3>📈 Evolución Horaria (OEE vs Rendimiento)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="oeeChart"></canvas>
+                    </div>
+                </div>
+
                 <div class="production-info-card card">
                     <h3>📊 Producción del Día por Código</h3>
                     <table id="productionTable">
@@ -354,6 +367,9 @@ body {
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEDGe-UPx956ZbpnHytjuJm4rFsTiROsZNGLNd8cOXgPRS7yGzz7yKHdT5DsnJ8A9-dA/exec'; 
 
+// Variable global para almacenar la instancia del gráfico
+let oeeChartInstance = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { 
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
@@ -404,7 +420,6 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     tbody.innerHTML = ''; 
 
     const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
-        // 🟢 [JS] Recibe nuevas variables aquí del objeto data
         return { 
             codigo: codigo, 
             cantidadGanchos: produccionPorCodigo[codigo], 
@@ -422,7 +437,83 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
         row.insertCell().textContent = item.codigo;
         row.insertCell().textContent = formatNumber(item.cantidadGanchos); 
         row.insertCell().textContent = formatNumber(item.cantidadPiezas); 
-        // 🟢 [JS] Agrega nuevas celdas aquí: row.insertCell().textContent = item.nuevaVariable;
+    });
+}
+
+// --- FUNCIÓN NUEVA: RENDERIZAR GRÁFICO ---
+function renderChart(historyData) {
+    if (!historyData || historyData.length === 0) return;
+
+    const ctx = document.getElementById('oeeChart').getContext('2d');
+    
+    const labels = historyData.map(item => item.time);
+    const oeeData = historyData.map(item => item.oee);
+    const rendimientoData = historyData.map(item => item.rendimiento);
+
+    // Si el gráfico ya existe, lo destruimos para redibujar
+    if (oeeChartInstance) {
+        oeeChartInstance.destroy();
+    }
+
+    oeeChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'OEE %',
+                    data: oeeData,
+                    borderColor: '#FFB300', // Amarillo Primario
+                    backgroundColor: 'rgba(255, 179, 0, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3, // Curvatura suave
+                    fill: true,
+                    pointRadius: 4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Rendimiento %',
+                    data: rendimientoData,
+                    borderColor: '#212121', // Gris oscuro
+                    borderWidth: 2,
+                    borderDash: [5, 5], // Línea punteada
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 0,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100, // Fija el máximo en 100% para mejor visualización
+                    title: {
+                        display: true,
+                        text: 'Porcentaje (%)'
+                    }
+                }
+            }
+        }
     });
 }
 
@@ -436,7 +527,13 @@ function displayData(data) {
     if (data.error) { handleError(data.error); return; }
     if (!data || !data.oee) { handleError({ message: "Datos incompletos." }); return; }
 
+    // Renderizar Tabla
     renderProductionTable(data.produccionPorCodigo, data.produccionPorCodigoCant)
+
+    // Renderizar Gráfico (NUEVO)
+    if (data.history) {
+        renderChart(data.history);
+    }
 
     const oee = parseFloat(data.oee);
     const oeeElement = document.getElementById('oee-value');
@@ -455,14 +552,11 @@ function displayData(data) {
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
-    // 🟢 [JS] Muestra nuevas variables de tiempo aquí:
-    // document.getElementById('id-en-html').textContent = data.nuevaVariable + ' min';
 
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
     document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
     document.getElementById('unidades-total').textContent = formatNumber(unidadesTotal);
-    // 🟢 [JS] Muestra nuevas variables de producción aquí
 }
 
 function handleError(error) {
