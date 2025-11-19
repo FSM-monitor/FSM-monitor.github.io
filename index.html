@@ -313,21 +313,47 @@ body {
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Establece la fecha de manera más completa y profesional
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { 
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-    });
-    //loadOeeData();
-
+// 1. AGREGADO: Tu URL de Apps Script (¡Asegúrate que esta URL sea la de tu último despliegue!)
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxV0ptN5QtEvG31UKuKGCgyOCdcGhhm9wuoyq_O_FjjDWRO1zE1vldyceXjAlmv5-ylZQ/exec'; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ... Código de fecha ...
+    // 1. Inicializa la fecha
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-ES', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    // 2. Carga inicial de datos
     loadOeeData();
+
+    // 3. Actualiza automáticamente cada 60 segundos
     setInterval(loadOeeData, 60000); 
 });
 
+// 11. Mejora: Función de utilidad para formatear números (DRY)
+function formatNumber(value) {
+    return Number(value).toLocaleString('es-ES'); 
+}
+
+// 12. Mejora: Función de utilidad para asignar ícono de semáforo
+function setIndicator(value, elementId, iconId) {
+    const element = document.getElementById(elementId);
+    const iconElement = document.getElementById(iconId);
+    let icon = '⚪'; 
+    element.classList.remove('indicator-low', 'indicator-medium', 'indicator-high');
+
+    if (value < 65) {
+        element.classList.add('indicator-low');
+        icon = '🔴';
+    } else if (value >= 65 && value < 85) {
+        element.classList.add('indicator-medium');
+        icon = '🟡';
+    } else {
+        element.classList.add('indicator-high');
+        icon = '🟢';
+    }
+    iconElement.textContent = icon;
+}
+
+// REEMPLAZADO: Función loadOeeData usando FETCH
 function loadOeeData() {
     const loadingDiv = document.getElementById('loading');
     const contentDiv = document.getElementById('dashboard-content');
@@ -335,11 +361,12 @@ function loadOeeData() {
     loadingDiv.style.display = 'block';
     contentDiv.style.display = 'none';
 
-    // 🌟 USAR FETCH EN LUGAR DE google.script.run
+    // Llamada HTTP con FETCH
     fetch(APPS_SCRIPT_URL)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                // Si el status no es 200, lanza un error
+                throw new Error('Error al obtener datos. Código HTTP: ' + response.status);
             }
             return response.json();
         })
@@ -351,71 +378,19 @@ function loadOeeData() {
         });
 }
 
-// ... El resto de tus funciones JavaScript (displayData, renderProductionTable, handleError) ...
-
-    // Actualizar automáticamente cada 60 segundos
-    //setInterval(loadOeeData, 60000); 
-});
-
-// 11. Mejora: Función de utilidad para formatear números (DRY)
-function formatNumber(value) {
-    // Asegura que sea un número y luego aplica el formato de localización
-    return Number(value).toLocaleString('es-ES'); 
-}
-
-// 12. Mejora: Función de utilidad para asignar ícono de semáforo
-function setIndicator(value, elementId, iconId) {
-    const element = document.getElementById(elementId);
-    const iconElement = document.getElementById(iconId);
-    let icon = '⚪'; // Icono por defecto (ej. círculo blanco)
-
-    element.classList.remove('indicator-low', 'indicator-medium', 'indicator-high');
-
-    // Mantenemos la lógica de semáforo (ej. 65/85)
-    if (value < 65) {
-        element.classList.add('indicator-low');
-        icon = '🔴';
-    } else if (value >= 65 && value < 85) {
-        element.classList.add('indicator-medium');
-        icon = '🟡';
-    } else {
-        element.classList.add('indicator-high');
-        icon = '🟢';
-    }
-    
-    // Actualiza el ícono en el span auxiliar
-    iconElement.textContent = icon;
-}
-
-
-//function loadOeeData() {
-    //const loadingDiv = document.getElementById('loading');
-   // const contentDiv = document.getElementById('dashboard-content');
-
-   // loadingDiv.style.display = 'block';
-   // contentDiv.style.display = 'none';
-
-    // Llama a la función de Apps Script
-   // google.script.run
-    //    .withSuccessHandler(displayData)
-    //    .withFailureHandler(handleError)
-    //    .getOeeData();
-//}
-
 function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
     const tbody = document.querySelector('#productionTable tbody');
-    tbody.innerHTML = ''; // Limpia datos anteriores
+    tbody.innerHTML = ''; 
 
     const sortedData = Object.keys(produccionPorCodigo).map(codigo => {
         return { 
             codigo: codigo, 
-            cantidadGanchos: produccionPorCodigo[codigo], // 13. Mejora: Nombres de variables más claros
+            cantidadGanchos: produccionPorCodigo[codigo], 
             cantidadPiezas: ProduccionporCodigoCant[codigo] || 0
         }; 
-    }).sort((a, b) => b.cantidadGanchos - a.cantidadGanchos); // Ordenar por cantidad de ganchos
+    }).sort((a, b) => b.cantidadGanchos - a.cantidadGanchos);
 
     if (sortedData.length === 0) {
-        // Asegura el colspan correcto
         tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #888; font-style: italic;">No hay producción registrada para hoy.</td></tr>';
         return;
     }
@@ -427,7 +402,6 @@ function renderProductionTable(produccionPorCodigo, ProduccionporCodigoCant) {
         const cellCantidadPiezas = row.insertCell();
 
         cellCodigo.textContent = item.codigo;
-        // 11. Mejora: Uso de la función de utilidad formatNumber
         cellCantidadGanchos.textContent = formatNumber(item.cantidadGanchos); 
         cellCantidadPiezas.textContent = formatNumber(item.cantidadPiezas); 
     });
@@ -447,6 +421,12 @@ function displayData(data) {
         handleError(data.error);
         return;
     }
+    
+    // Si la data está vacía, debe lanzar un error o mostrar una alerta.
+    if (!data || !data.oee) {
+        handleError({ message: "La aplicación de Google no devolvió los datos correctamente. Verifique la función getOeeData." });
+        return;
+    }
 
     renderProductionTable(data.produccionPorCodigo, data.produccionPorCodigoCant)
 
@@ -455,39 +435,30 @@ function displayData(data) {
     const rendimiento = parseFloat(data.rendimiento);
     const calidad = parseFloat(data.calidad);
 
-
-    // 12. Mejora: Aplicar indicador de color y ícono (semáforo) para todas las métricas OEE
-    setIndicator(oee, 'oee-value', 'oee-icon'); // Se añade span en el HTML principal si se desea ícono aquí
-
+    // [Resto del código de displayData sin cambios...]
+    setIndicator(oee, 'oee-value', 'oee-icon'); 
     setIndicator(disponibilidad, 'disponibilidad-value', 'disponibilidad-icon');
     setIndicator(rendimiento, 'rendimiento-value', 'rendimiento-icon');
     setIndicator(calidad, 'calidad-value', 'calidad-icon');
 
-
-    // 1. Métricas Principales (El formato se maneja dentro de setIndicator para el color)
     oeeValueElement.textContent = data.oee + '%';
     document.getElementById('disponibilidad-value').firstChild.textContent = data.disponibilidad + '% ';
     document.getElementById('rendimiento-value').firstChild.textContent = data.rendimiento + '% ';
     document.getElementById('calidad-value').firstChild.textContent = data.calidad + '% ';
 
-
-    // 2. Tiempos
     document.getElementById('tiempo-estandar').textContent = formatNumber(data.tiempoEstandarMin) + ' min';
     document.getElementById('tiempo-planeado').textContent = formatNumber(data.tiempoFuncionamientoPlaneadoMin) + ' min';
     document.getElementById('tiempo-operativo').textContent = formatNumber(data.tiempoOperativoMin) + ' min';
 
-    // 3. Producción
     const unidadesTotal = data.unidadesBuenas + data.unidadesMalas;
-    // 11. Mejora: Uso de la función de utilidad formatNumber
     document.getElementById('unidades-buenas').textContent = formatNumber(data.unidadesBuenas);
     document.getElementById('unidades-malas').textContent = formatNumber(data.unidadesMalas);
     document.getElementById('unidades-total').textContent = formatNumber(unidadesTotal);
-
 }
 
 function handleError(error) {
     const loadingDiv = document.getElementById('loading');
-    loadingDiv.textContent = '❌ ERROR al cargar los datos: ' + error.message;
+    loadingDiv.textContent = '❌ ERROR: ' + error.message;
     loadingDiv.style.color = 'var(--color-danger)';
     console.error(error);
 }
